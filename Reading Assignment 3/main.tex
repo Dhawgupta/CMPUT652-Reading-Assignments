@@ -1,0 +1,304 @@
+\documentclass[twocolumn,11pt]{article}
+\usepackage[    % Much better micro typography
+protrusion=true, % adjust to your eye needs 
+expansion=true,
+tracking=true,
+kerning=true,
+spacing=true,
+letterspace=50, % well spaced smallcaps
+shrink=40,      % may be 20 or less is good   
+factor=1000]    % may be less that 1000 
+{microtype} 
+\usepackage{dsfont}
+\usepackage[margin=1cm,bmargin=1.4cm]{geometry} % little margins 
+\usepackage{lipsum} % dummy text
+\usepackage[toc,page]{appendix}
+\usepackage{setspace} 
+\usepackage{hyperref}
+\usepackage{mathtools, nccmath}
+\setstretch{0.8}      % same as \linespread{.8} 
+\usepackage{amsmath,amsthm,amssymb,hyperref}
+\usepackage{dsfont}
+\usepackage{dsfont}
+\usepackage{amsmath}
+% \usepackeg{}
+\usepackage{color}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\State}{\mathcal{S}}
+\DeclareMathOperator{\Action}{\mathcal{A}}
+\DeclareMathOperator{\Reward}{\mathcal{R}}
+\DeclareMathOperator{\state}{\mathcal{S}}
+\DeclareMathOperator{\action}{\mathcal{A}}
+\DeclareMathOperator{\reward}{\mathcal{R}}
+\DeclareMathOperator{\qp}{q_\pi} % indicates the the q vlaue function following policy pi
+\DeclareMathOperator{\vp}{v_\pi} % value funciton following policy pi
+\DeclareMathOperator{\rhp}{\rho_{\pi}} % the probability fgunciton for following policy pi
+\DeclareMathOperator{\Ep}{\E_\pi}
+\DeclareMathOperator{\vpd}{v_{\pi'}}
+\DeclareMathOperator{\qpd}{q_{\pi'}}
+\DeclareMathOperator{\maxa}{\underset{a}{\text{max }}}
+\DeclareMathOperator{\argmaxa}{\underset{a}{\text{argmax }}}
+\makeatletter         
+\def\@maketitle{   % custom maketitle 
+{\Large \bfseries \color{red} \@title}
+{\scshape Submitted by:} \@author ~ at  \@date \par 
+\smallskip \hrule \bigskip }
+
+% custom section 
+\renewcommand{\section}{\@startsection
+{section}%                   % the name
+{2}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+% custom section 
+\renewcommand{\subsection}{\@startsection
+{subsection}%                   % the name
+{1}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+\makeatother
+
+
+% 
+\title{Summary Chapter 3 \& 4 RL Book \cite{sutton2018reinforcement}}
+\author{Dhawal Gupta}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Markov Decision Process (MDP)}
+MDP's are a mathematically idealized form of RL problems, finite MDP constitute of a finite set of States ($\mathcal{S}$),  finite set of Actions ($\Action$) and finite set of possible rewards ($\Reward$), also $s' \in \mathcal{S}^+$ is used to represent the set of states plus the terminal state , and every element in those sets have a well defined discrete probability. 
+
+A sample trajectory looks like\\
+$S_0, A_0, R_1, S_1, A_1, R_2, S_2, \ldots$ where an action $A_t \in \Action$ in State $S_t \in  \State$ in the environement returns a next state $S_{t+1} \in \State$ and a reward $R_{t+1} \in \Reward$.
+
+The \textbf{dynamics} of the MDP are defined as 
+\begin{align}\label{eq:1}
+    p(s',r|s,a) \doteq Pr\{S_t= s', R_t = r | S_{t-1} = s, A_{t-1} = a\}
+\end{align}
+which is a deterministic discrete probability distribution. Where each next state and reward are completely dependent only on the preceding state, and no state before that (restriction of S to be expressive). And we call the state to have \textbf{Markov Property}. 
+
+We can express some other functions using \ref{eq:1}\useshortskip
+\begin{align}\label{eq:2}
+    p(s'|s,a) \doteq \sum_{r \in \Reward}p(s', r|s, a)
+\end{align}\useshortskip
+\begin{align}\label{eq:3}
+    r(s,a) \doteq \E[R_t | s, a] = \sum_{r \in \Reward} r \sum_{s' \in \State} p(s',r|s,a)
+\end{align}\useshortskip
+\begin{align}\label{eq:4}
+    r(s,a,s') \doteq \E[r_t| s,a, s'] = \sum_{r \in \Reward} r \dfrac{p(s',r|s,a}{p(s'|s,a)}
+\end{align}]\useshortskip
+The general rule being anything that cannot be changed arbitrarily by the agent is considered to be outside of it and part of the environment, like robot limbs,  reward signals etc. The agent-environment boundary represents the limit of the agents absolute control not of its knowledge.
+
+Some important points I think . we should know
+\begin{enumerate}
+    \item Reward signal is not the place to impart to the agent prior knowledge about how to achieve what we want to do 
+\end{enumerate}
+
+\subsection{Return  and Episode}
+The return $G_t$ that the agent tries to maximize is often defined as \useshortskip
+\begin{align}
+G_t &\doteq R_t + \gamma R_{t+1} + \gamma^2 R_{t+2} + \ldots\\
+G_t &= R_t + \gamma G_{t+1} \\
+&= \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\\
+&= \sum_{k = t+1}^{T} \gamma^{k - t-  1}R_k \text{ for episodic cases}
+\end{align}\useshortskip
+where gamma is defined as the discounting factor to avoid running into infinities. 
+\subsection{Unifying notation for episodic and continuing tasks}
+WE can use the same notation for episodic tasks by putting the constraint that at the ending time T, the agent enters an absorbing state with zero reward and we condition following as $T = \infty \text{ or } \gamma = 1$ but not both.  
+
+\subsection{Policies and Value Functions}
+\textbf{Value Function }: of state $s$ under policy $\pi$ denoted by $\vp(s)$ defined as is the expected return starting in that state and following $\pi$ from there.
+\begin{align}\label{eq:vpi}
+    \vp(s) = \E_\pi [G_t | S_t =s] \forall s \in \State
+\end{align}
+\textbf{Important} : The value of the terminal state, if any, is always zero.  
+Whereas $\qp(s,a)$ is defined the expected run of taking action $a$ in $s$ and then following policy $\pi$.
+\begin{align}\label{eq:qpi}
+    \qp(s,a) \doteq \Ep[ G_t | S_t = s, A_t = a]
+\end{align}
+
+\subsection{Recursive form of $\vp(s)$ and $\qp(s,a)$}
+Bellman equation for value function under policy $\pi$. \useshortskip
+The value function $\vp$ is the unique solution to its Bellman equation. 
+\begin{align}
+	\vp(s)  &=\sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma \vp(s')] \forall s \in \state\\
+	&= \Ep[q(s, A_t)]
+\end{align}
+\begin{align}
+	\qp(s,a)  &=  \sum_{s',r} p(s',r|s,a) [r + \gamma \sum_a' \pi(a'|s') \qp(s',a')] \forall s \in \state\\
+	&= \Ep[ R(s,a) + \gamma \vp(S_{t+1}) | S_t = s, A_t = a]
+\end{align}
+\subsection{Optimal Policies and Value Functions}
+A better or equal policy $\pi$ over $\pi'$ is defined as $\pi \geq \pi'$ iff $\vp(s) \geq v_{\pi'}(s) \forall s \in \state$. There is always one policy better than a policy and an optimal policy $\pi^*$ which is better than any other policy(can be more than one). and share the same state value function. i.e. $v_*(s) \doteq \underset{\pi}{max}\vp(s)$ and $q_*(s,a) \doteq \underset{\pi}{max} \qp (s,a)$ and $q_*(s,a).  = \E[R_{t+1}. + \gamma v_*(S_{t+1})  | S_t = s, A_t = a]$
+The value of a state under an optimal policy must equal the expected return for best action from that state.\useshortskip
+\begin{align}\label{eq:v_optimal}
+	v_*(s) &= \underset{a \in \action}{max } q_{\pi*}(s,a) \nonumber\\
+	&= \underset{a}{max} \sum_{s',r} p(s',r|s,a) [r + \gamma. v_*(s')]
+\end{align}
+Similarly for the q value function we get.\useshortskip
+\begin{align}\label{eq:q_optimal}
+	q_*(s,a) &= \E[R_{t+1} + \gamma \underset{a'}{max }q_*(S_{t+1}, a')  | S_t = s, A_t = a]\nonumber\\
+	&= \sum_{s',r} p(s',r|s,a) [ r+ \gamma \underset{a'}{\text{max }} q_*(s',a')]
+\end{align}
+A policy that is greedy with respect to $v_*$ will be an optimal policy. Having the knowledge of $q_*(s,a)$ eliminates the need to do a one step search on the actions, and value of future states, and also the environment dynamics.
+
+\section{Dynamic Programming} DP can be used to compute optimal policies given a perfect model of the environment as an MDP , but their highly compute intensive.
+
+\subsection{Policy Evaluation}
+The value function for a policy is know as policy evaluation and normally equation \ref{eq:vpi} can be thought of as a system of $|S|$ equations, where each term is a linear dependent on the other variables, and there are $|S|$ unknowns. There are also two methods to solve this, 1. Iterative 2. Analytical, we describe the iterative method. We choose initial approaximation for each state $v_0$ (except for terminal state, which is 0) and use the bellman equation for the update rule.
+\begin{align}
+	v_{k+1}(s) &\doteq \Ep[R_{t+1} + \gamma v_k(S_{t+1} | S_t = s]\\
+	&= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma v_k(s')]
+\end{align}
+All the updates done on DP algorithms are called expected updates because they are based on expectation of the next states rather than sampling of the next states.
+
+
+\subsection{Policy Improvement}
+We  compute a value function as to improve the existing policy.  Determining $\vp$ for a policy $\pi$, we  want to know wether  we can improve on the policy i.e. take action $a \neq \pi(s)$ and improve our value function in general. One way of seeing this is taking action $a$ in $s$ and then following policy $\pi$ afterwards, which  can be written as : $\qp(s,a)$ where a might not be sampled from $\pi$. Criterion being if this greater than $\vp(s)$ and then we can replace this step with always taking action as it will always imprive the value function for $v_{\pi'}(s)$, where the new policy can be taking action $a = \pi'(s)$ and then following $\pi$ for rest.
+
+\textbf{Policy Improvement Theorem } $\pi$ and $\pi'$ are 2 deterministic policies, such that $\forall s \in \state$\useshortskip
+\begin{align} \label{eq:condition_pit}
+	\qp(s, \pi'(s)) \geq \vp(s)
+\end{align}
+Then the policy $\pi'$ must be as good as, or better than $\pi$. This is a generalisation of the above statement.\useshortskip
+\begin{align}
+	v_{\pi'}(s) \geq \vp(s)
+\end{align}
+Proof the same has been expanded in great detail later. Now we can extend the single change in action to all states, considering a new greedy policy $\pi'$s given  by, 
+\begin{align}\label{eq:policy_improvement}
+	\pi'(s)  \doteq  \underset{a}{\text{argmax }} \qp(s,a)
+\end{align} ,
+where we  can distribute the policy probability equally on the multiple best action it is okay until and unless all the suboptimal actions get a 0 probability value. This meets with the condition of  the Policy Improvement Theorem \ref{eq:condition_pit}. This process of greedyfying is often called as policy improvement.
+
+\textbf{Getting the Optimal Policy} : Suppose new  policy $\pi'$ is as good as and not better than $\pi$ i.e. $\vp = \vpd$ and from \ref{eq:policy_improvement}  we get  $\forall s \in \state$. \useshortskip
+\begin{align*}
+	\vpd(s) = \maxa \sum_{s',r} p(s',r|s,a) [r + \gamma \vpd(s')]
+\end{align*}
+Which matches the Bellman Optimality equation there $\vpd = v_*$
+
+\subsection{Policy Iteration}
+The process of alternating between policy evaluation and policy improvement to approach the optimal policy, is called as policy iteration. A policy $\pi$ can be improved using $\vp$ to get a new policy $\pi'$, as summarized in this diagram\\
+$\pi_0 \overset{E}{\rightarrow} v_{\pi_0} \overset{I}{\righarrow}  $
+
+
+
+\section{Proofs}
+\subsection{Proof of $\vp(s)$}
+\begin{align*}
+	\vp(s) &= \Ep[G_t | S_t = s] \\
+	&= \Ep [R_{t+1} + \gamma G_{t+1} | S_t = s]\\
+	&= \Ep[R_{t+1}  | S_t= s] + \gamma \Ep[G_{t+1} | S_t= s]\\
+	&= \sum_{r,  a} r \times \pi(a|s) \times p(r|s,a) + \gamma  \Ep[G_{t+1} | S_t= s]\\
+	&= \sum_{r,  a} r \pi(a|s)  p(r|s,a) +\\
+	& \gamma  ( \sum_{s'}( \sum_a \pi(a|s)p(s'|s,a)  \Ep[G_{t+1} | S_{t+1} = s']))\\
+	&= \sum_a \pi(a|s) [  \sum_r r p(r|s,a) + \\
+	&\gamma \sum_{s'}p(s'|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+	&= \sum_a \pi(a|s) [  \sum_{r,s'} r p(s',r|s,a) +\\
+	& \gamma \sum_{s',r}p(s',r|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+	&= \sum_a \pi(a|s) \sum_{r,s'} p(s',r|s,a)[ r + \gamma \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+	&= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma \vp(s')] \forall s \in \state
+\end{align*}
+
+\subsection{Proof of policy Improvement (I have done this in the exercise solutions)}
+\begin{align*}
+	\vp(s) & \leq \qp(s,\pi'(s))\\
+	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) }[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s, A_t = \pi'(s)]\\
+	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) ,a \sim \pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
+	& \text{ Shortening the notation}\\
+	&= \E_{\pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
+	& \text{Applying $\pi'$ on another step we get}\\
+	& \leq  \E_{\pi'}[ R_{t+1} + \gamma \qp(S_{t+1}, \pi'(S_{t+1}) | S_t = s]\\
+	& = \E_{\pi'}[ R_{t+1} + \gamma  \E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1}]    | S_t = s]\\
+	&\text{Continued in the exercise solutions}
+\end{align*}
+
+
+
+
+\subsection{Notation}
+We can define different aspects of the problem as follows:
+\noindent
+\begin{tabbing}
+\=~~~~~~~~~~~~~~  \= \kill
+\>$a$   \>The value of action selected \\
+\>$A_t$    \>Random variable, action selected at time $t$\\
+\>$R_t $    \>Reward collected at time $t$\\
+\>$Q_t(a)$    \>Estimate value function of action $a$ at time $t$\\
+\>$q_*(a)$    \>Optimal value of action $a$\\
+\>$\alpha$    \>Constant learning rate\\
+\>$\alpha_t$    \> Learning rate at time $t$\\
+\>$\doteq$    \>Defined as $t$\\
+\>$\pi_t$    \>Policy followed at $t$\\
+\end{tabbing}
+The optimal value function i.e. $q_*$ for an action $a$ can be defined as follows\useshortskip
+\begin{equation}
+    q_*(a) \doteq \E[R_t| A_t = a]
+\end{equation}
+
+\subsection{Terms}
+\textbf{Exploitation Policy :} A policy $\pi_t$ which tries to exploit the estimated value of an action at time $t$ using $Q_t$ and picks the action with the estimated highest return.\newline
+\textbf{Exploration Policy :} A policy $\pi_t$ which tries to explore the  different actions at time $t$ and picks action using some criterion or randomly.\newline
+\textbf{Stationary Problem : } A k-armed bandit problem where the reward distribution of each arm stays unchanged over the duration of experiment.\newline
+\textbf{Non Stationary Problem :} A k-armed bandit problem in which the reward distribution of each arm (/action) may change over the period of time.
+
+\section{Action-value Methods}
+We can use sample averaging method to estimating the value of different actions
+\useshortskip\begin{equation}
+    Q_t(a) \doteq  \dfrac{\sum_{i=1}^{t-1}R_i\mathbb{1}_{A_i = a}}{\sum_{i=1}^{t-1}\mathbb{1}_{A_i = a}}
+\end{equation}
+Either we can follow a greedy policy and select our action based on $argmax_a Q_t(a)$, or we can follow an $\epsilon$-greedy policy, where we select a random action with probability $\epsilon$ otherwise we pick do exploitation
+
+\section{Incremental Implementation}
+Rather than keeping a track of all the previous rewards for a action $a$ we will write it into a form of incremental form where we need to remember the previous estimate and number of times the action as been picked.\useshortskip
+\begin{equation}\label{eq:incremental}
+    Q_{n+1} = Q_n + \dfrac{1}{n}[R_n - Q_n] \text{ for a single action}
+\end{equation}
+\section{Tracking a Non Stationary Problem}
+The problem with \ref{eq:incremental} is that the update error weight decays with the number of plays and the agent might not be able to adapt to changing reward distributions after a given amount of time. We can try to use a constant learning parameter $\alpha$ to counter this.
+\begin{equation}
+    \begin{split}
+        Q_{n+1} &\doteq Q_n + \alpha[R_n - Q_n]\\
+        &= (1 - \alpha)^n Q_1 + \sum_{i=1}^{n}\alpha(1 -\alpha)^{n-i}R_i.
+    \end{split}
+\end{equation}
+
+
+\section{Optimistic Initial Values}
+The book \cite{sutton2018reinforcement} shows that setting the initial action values estimates of all the actions to an optimistic values allows us to embed the process of exploration in the inherent process of doing a greedy search , but again that is plagued by the process of non stationary problems.
+\section{Upper-Confidence-Bound Action Selection }
+In this approach we try to reason on the uncertainty of different action and their potential of returning higher rewards than the current estimated maximum reward. One way to do it is via following:\useshortskip
+\begin{equation}
+    A_t \doteq \underset{a}{argmax}[Q_t(a) + c\sqrt{\dfrac{\ln{t}}{N_t(a)}}]
+\end{equation}
+Where $N_t(a)$ denotes the number of times action $a$ has been selected prior to time $t$. $c $ control the degree of exploration.
+\section{Gradient Bandit Algorithm}
+Now we try to learn a numerical preference for each action $a$ denoted by $H_t(a)$. Larger preference implies more probability of taking the action, there is not interpretation in terms of reward. Only the relative preference matters and absolute values carry no significance. 
+\begin{equation}
+    Pr{A_t = a} \doteq \dfrac{\exp^{H_t(a)}}{\sum_{b=1 }^{k}exp^{H_t(b)}} \doteq \pi_t(a)
+\end{equation}
+Update rules for the preference of action.
+\begin{equation}
+    \begin{split}
+        H_{t+1}(A_t) &\doteq H_t (A_t) + \alpha(R_t - \hat{R}_t)(1 - \pi_t(A_t)), \text{and}\\
+        H_{t+1}(a) &\doteq H_t(a) - \alpha(R_t - \hat{R}_t)\pi_t(a), \text{ for all $a \neq A_t$}
+    \end{split}
+\end{equation}
+Here $\hat{R}_t$ is the average of all rewards up to the time $t$, including it. 
+
+
+
+
+
+\bibliographystyle{plain}
+
+\bibliography{reference}
+
+\end{document}

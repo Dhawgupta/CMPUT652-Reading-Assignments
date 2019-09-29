@@ -1,0 +1,141 @@
+\documentclass[twocolumn,11pt]{article}
+\usepackage[    % Much better micro typography
+protrusion=true, % adjust to your eye needs 
+expansion=true,
+tracking=true,
+kerning=true,
+spacing=true,
+letterspace=50, % well spaced smallcaps
+shrink=40,      % may be 20 or less is good   
+factor=1000]    % may be less that 1000 
+{microtype} 
+\usepackage{dsfont}
+\usepackage[margin=1cm,bmargin=1.4cm]{geometry} % little margins 
+\usepackage{lipsum} % dummy text
+\usepackage[toc,page]{appendix}
+\usepackage{setspace} 
+\usepackage{hyperref}
+\usepackage{mathtools, nccmath}
+\setstretch{0.8}      % same as \linespread{.8} 
+\usepackage{amsmath,amsthm,amssymb,hyperref}
+\usepackage{dsfont}
+\usepackage{dsfont}
+\usepackage{amsmath}
+% \usepackeg{}
+\usepackage{color}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\makeatletter         
+\def\@maketitle{   % custom maketitle 
+{\Large \bfseries \color{red} \@title}
+{\scshape Submitted by:} \@author ~ at  \@date \par 
+\smallskip \hrule \bigskip }
+
+% custom section 
+\renewcommand{\section}{\@startsection
+{section}%                   % the name
+{2}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+% custom section 
+\renewcommand{\subsection}{\@startsection
+{subsection}%                   % the name
+{1}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+\makeatother
+
+
+% 
+\title{Summary Chapter 2 RL Book \cite{sutton2018reinforcement}}
+\author{Dhawal Gupta}
+\date{\today}
+
+\begin{document}
+\maketitle
+\section{Problem Definition : K armed bandit}
+The problem can be defined by facing a slot machine consisting of k arms (/levers) which you can pull. Given a chance, you can select one arm to pull, given that choice  of arm you receive a numerical reward (can be thought of as monetary payoff from slot machine) from and underlying unknown distribution, which may be different for each of the k arms. Our objective is to maximize the expected total reward that we can earn in say a given number of tries or time period. 
+\subsection{Notation}
+We can define different aspects of the problem as follows:
+\noindent
+\begin{tabbing}
+\=~~~~~~~~~~~~~~  \= \kill
+\>$a$   \>The value of action selected \\
+\>$A_t$    \>Random variable, action selected at time $t$\\
+\>$R_t $    \>Reward collected at time $t$\\
+\>$Q_t(a)$    \>Estimate value function of action $a$ at time $t$\\
+\>$q_*(a)$    \>Optimal value of action $a$\\
+\>$\alpha$    \>Constant learning rate\\
+\>$\alpha_t$    \> Learning rate at time $t$\\
+\>$\doteq$    \>Defined as $t$\\
+\>$\pi_t$    \>Policy followed at $t$\\
+\end{tabbing}
+The optimal value function i.e. $q_*$ for an action $a$ can be defined as follows\useshortskip
+\begin{equation}
+    q_*(a) \doteq \E[R_t| A_t = a]
+\end{equation}
+
+\subsection{Terms}
+\textbf{Exploitation Policy :} A policy $\pi_t$ which tries to exploit the estimated value of an action at time $t$ using $Q_t$ and picks the action with the estimated highest return.\newline
+\textbf{Exploration Policy :} A policy $\pi_t$ which tries to explore the  different actions at time $t$ and picks action using some criterion or randomly.\newline
+\textbf{Stationary Problem : } A k-armed bandit problem where the reward distribution of each arm stays unchanged over the duration of experiment.\newline
+\textbf{Non Stationary Problem :} A k-armed bandit problem in which the reward distribution of each arm (/action) may change over the period of time.
+
+\section{Action-value Methods}
+We can use sample averaging method to estimating the value of different actions
+\useshortskip\begin{equation}
+    Q_t(a) \doteq  \dfrac{\sum_{i=1}^{t-1}R_i\mathbb{1}_{A_i = a}}{\sum_{i=1}^{t-1}\mathbb{1}_{A_i = a}}
+\end{equation}
+Either we can follow a greedy policy and select our action based on $argmax_a Q_t(a)$, or we can follow an $\epsilon$-greedy policy, where we select a random action with probability $\epsilon$ otherwise we pick do exploitation
+
+\section{Incremental Implementation}
+Rather than keeping a track of all the previous rewards for a action $a$ we will write it into a form of incremental form where we need to remember the previous estimate and number of times the action as been picked.\useshortskip
+\begin{equation}\label{eq:incremental}
+    Q_{n+1} = Q_n + \dfrac{1}{n}[R_n - Q_n] \text{ for a single action}
+\end{equation}
+\section{Tracking a Non Stationary Problem}
+The problem with \ref{eq:incremental} is that the update error weight decays with the number of plays and the agent might not be able to adapt to changing reward distributions after a given amount of time. We can try to use a constant learning parameter $\alpha$ to counter this.
+\begin{equation}
+    \begin{split}
+        Q_{n+1} &\doteq Q_n + \alpha[R_n - Q_n]\\
+        &= (1 - \alpha)^n Q_1 + \sum_{i=1}^{n}\alpha(1 -\alpha)^{n-i}R_i.
+    \end{split}
+\end{equation}
+
+
+\section{Optimistic Initial Values}
+The book \cite{sutton2018reinforcement} shows that setting the initial action values estimates of all the actions to an optimistic values allows us to embed the process of exploration in the inherent process of doing a greedy search , but again that is plagued by the process of non stationary problems.
+\section{Upper-Confidence-Bound Action Selection }
+In this approach we try to reason on the uncertainty of different action and their potential of returning higher rewards than the current estimated maximum reward. One way to do it is via following:\useshortskip
+\begin{equation}
+    A_t \doteq \underset{a}{argmax}[Q_t(a) + c\sqrt{\dfrac{\ln{t}}{N_t(a)}}]
+\end{equation}
+Where $N_t(a)$ denotes the number of times action $a$ has been selected prior to time $t$. $c $ control the degree of exploration.
+\section{Gradient Bandit Algorithm}
+Now we try to learn a numerical preference for each action $a$ denoted by $H_t(a)$. Larger preference implies more probability of taking the action, there is not interpretation in terms of reward. Only the relative preference matters and absolute values carry no significance. 
+\begin{equation}
+    Pr{A_t = a} \doteq \dfrac{\exp^{H_t(a)}}{\sum_{b=1 }^{k}exp^{H_t(b)}} \doteq \pi_t(a)
+\end{equation}
+Update rules for the preference of action.
+\begin{equation}
+    \begin{split}
+        H_{t+1}(A_t) &\doteq H_t (A_t) + \alpha(R_t - \hat{R}_t)(1 - \pi_t(A_t)), \text{and}\\
+        H_{t+1}(a) &\doteq H_t(a) - \alpha(R_t - \hat{R}_t)\pi_t(a), \text{ for all $a \neq A_t$}
+    \end{split}
+\end{equation}
+Here $\hat{R}_t$ is the average of all rewards up to the time $t$, including it. 
+
+
+\subsection{Contextual Bandits}
+The contextual bandits problem extends the current simple problem into the case where we have n different k armed slot machine, and given the id of a machine we need to learn to pull the best arm of the machine. This is only short of the full reinforcement learning problem , if taking the current action decided the future state (or machine) we might have to take an action on (play on).
+
+\bibliographystyle{plain}
+
+\bibliography{reference}
+
+\end{document}

@@ -5,7 +5,7 @@ expansion=true,
 tracking=true,
 kerning=true,
 spacing=true,
-letterspace=50, % well spaced smallcaps
+%letterspace=50, % well spaced smallcaps
 shrink=40,      % may be 20 or less is good   
 factor=1000]    % may be less that 1000 
 {microtype} 
@@ -67,7 +67,7 @@ factor=1000]    % may be less that 1000
 
 
 % 
-\title{Summary Chapter 3 \& 4 RL Book \cite{sutton2018reinforcement}}
+\title{Chapter 9.1-9.4, 11.4, 13 Book \cite{sutton2018reinforcement}}
 \author{Dhawal Gupta}
 \date{\today}
 
@@ -194,112 +194,59 @@ The policy evaluation part is most of the time a very compute intensive operatio
 We can obtain it by turning the bellman optimality equation into an update rule, and it is also similar to policy evaluation update it differs in taking a max on a.
 \begin{align}
 	v_{k+1}(s) &\doteq \maxa \E[R_{t+1} + \gamma v_{k}(S_{t+1}|S_{t} = s , A_{t}=a]\\
-	&= \maxa \dynamics [r + \gamma v_{k}(s')]\\
+	&= \maxa \dynamics [r + \gamma v_{k}(s')]
 \end{align}
+Same form can be written for the state-action update
+\begin{align}
+	q_{k+1}(s,a) &\doteq \E[R_{t+1} + \gamma \underset{a'}{\max} q_{k}(s',a)]\\
+&= \dynamics [r + \gamma \underset{a'}{\text{max }} q_{k}(s',a')]
+\end{align}
+
+\subsection{Asynchronous DP}
+DP suffer from the problem going in a deadlock of sweeping through the entire state space even for a single value iteration. We can avoid this by updating the states no fixed order to maybe focus on states that are more important for the current context, or ignoring those state that are all together not required for the optimal behaviour. This  can also be used  to learn  in an online fashion. 
+
+\subsection{Generalized Policy Iteration}
+PI consists of 2 simultaneous, interacting process, i.e. policy evaluation and policy improvement. GPI refers to the general notion of PE and Policy Improvement. All RL algorithms try to solve this only we try to estimate the value function in order to act greedy with respect to that , me improve the policy from that and then we again to estimate the  same using the new improved policy to improve it further. When both the process stabilise we reach the optimal policy and the optimal value function. And we  say a policy has been found when it is greedy with respect to its own value function. 
+
+\subsection{Efficiency of Dynamic Programming}
+Efficiency of DP : DP can be said to be a polynomial time algorithm in the number of states (s) and the number of action  (k), being considerably better than some of the search methods who might have to search through $k^{n}$ policies.s
+
 \section{Proofs}
-\subsection{Proof of $\vp(s)$}
-\begin{align*}
-	\vp(s) &= \Ep[G_t | S_t = s] \\
-	&= \Ep [R_{t+1} + \gamma G_{t+1} | S_t = s]\\
-	&= \Ep[R_{t+1}  | S_t= s] + \gamma \Ep[G_{t+1} | S_t= s]\\
-	&= \sum_{r,  a} r \times \pi(a|s) \times p(r|s,a) + \gamma  \Ep[G_{t+1} | S_t= s]\\
-	&= \sum_{r,  a} r \pi(a|s)  p(r|s,a) +\\
-	& \gamma  ( \sum_{s'}( \sum_a \pi(a|s)p(s'|s,a)  \Ep[G_{t+1} | S_{t+1} = s']))\\
-	&= \sum_a \pi(a|s) [  \sum_r r p(r|s,a) + \\
-	&\gamma \sum_{s'}p(s'|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
-	&= \sum_a \pi(a|s) [  \sum_{r,s'} r p(s',r|s,a) +\\
-	& \gamma \sum_{s',r}p(s',r|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
-	&= \sum_a \pi(a|s) \sum_{r,s'} p(s',r|s,a)[ r + \gamma \Ep[G_{t+1} | S_{t+1} = s']  ]\\
-	&= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma \vp(s')] \forall s \in \state
-\end{align*}
+Proofs for $\vp(s)$ and Policy Improvement Theorem are attached separately.
 
-\subsection{Proof of policy Improvement (I have done this in the exercise solutions)}
-\begin{align*}
-	\vp(s) & \leq \qp(s,\pi'(s))\\
-	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) }[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s, A_t = \pi'(s)]\\
-	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) ,a \sim \pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
-	& \text{ Shortening the notation}\\
-	&= \E_{\pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
-	& \text{Applying $\pi'$ on another step we get}\\
-	& \leq  \E_{\pi'}[ R_{t+1} + \gamma \qp(S_{t+1}, \pi'(S_{t+1}) | S_t = s]\\
-	& = \E_{\pi'}[ R_{t+1} + \gamma  \E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1}]    | S_t = s]\\
-	&\text{Continued in the exercise solutions}
-\end{align*}
+%\subsection{Proof of $\vp(s)$}
 
-
-
-\subsection{Notation}
-We can define different aspects of the problem as follows:
-\noindent
-\begin{tabbing}
-\=~~~~~~~~~~~~~~  \= \kill
-\>$a$   \>The value of action selected \\
-\>$A_t$    \>Random variable, action selected at time $t$\\
-\>$R_t $    \>Reward collected at time $t$\\
-\>$Q_t(a)$    \>Estimate value function of action $a$ at time $t$\\
-\>$q_*(a)$    \>Optimal value of action $a$\\
-\>$\alpha$    \>Constant learning rate\\
-\>$\alpha_t$    \> Learning rate at time $t$\\
-\>$\doteq$    \>Defined as $t$\\
-\>$\pi_t$    \>Policy followed at $t$\\
-\end{tabbing}
-The optimal value function i.e. $q_*$ for an action $a$ can be defined as follows\useshortskip
-\begin{equation}
-    q_*(a) \doteq \E[R_t| A_t = a]
-\end{equation}
-
-\subsection{Terms}
-\textbf{Exploitation Policy :} A policy $\pi_t$ which tries to exploit the estimated value of an action at time $t$ using $Q_t$ and picks the action with the estimated highest return.\newline
-\textbf{Exploration Policy :} A policy $\pi_t$ which tries to explore the  different actions at time $t$ and picks action using some criterion or randomly.\newline
-\textbf{Stationary Problem : } A k-armed bandit problem where the reward distribution of each arm stays unchanged over the duration of experiment.\newline
-\textbf{Non Stationary Problem :} A k-armed bandit problem in which the reward distribution of each arm (/action) may change over the period of time.
-
-\section{Action-value Methods}
-We can use sample averaging method to estimating the value of different actions
-\useshortskip\begin{equation}
-    Q_t(a) \doteq  \dfrac{\sum_{i=1}^{t-1}R_i\mathbb{1}_{A_i = a}}{\sum_{i=1}^{t-1}\mathbb{1}_{A_i = a}}
-\end{equation}
-Either we can follow a greedy policy and select our action based on $argmax_a Q_t(a)$, or we can follow an $\epsilon$-greedy policy, where we select a random action with probability $\epsilon$ otherwise we pick do exploitation
-
-\section{Incremental Implementation}
-Rather than keeping a track of all the previous rewards for a action $a$ we will write it into a form of incremental form where we need to remember the previous estimate and number of times the action as been picked.\useshortskip
-\begin{equation}\label{eq:incremental}
-    Q_{n+1} = Q_n + \dfrac{1}{n}[R_n - Q_n] \text{ for a single action}
-\end{equation}
-\section{Tracking a Non Stationary Problem}
-The problem with \ref{eq:incremental} is that the update error weight decays with the number of plays and the agent might not be able to adapt to changing reward distributions after a given amount of time. We can try to use a constant learning parameter $\alpha$ to counter this.
-\begin{equation}
-    \begin{split}
-        Q_{n+1} &\doteq Q_n + \alpha[R_n - Q_n]\\
-        &= (1 - \alpha)^n Q_1 + \sum_{i=1}^{n}\alpha(1 -\alpha)^{n-i}R_i.
-    \end{split}
-\end{equation}
-
-
-\section{Optimistic Initial Values}
-The book \cite{sutton2018reinforcement} shows that setting the initial action values estimates of all the actions to an optimistic values allows us to embed the process of exploration in the inherent process of doing a greedy search , but again that is plagued by the process of non stationary problems.
-\section{Upper-Confidence-Bound Action Selection }
-In this approach we try to reason on the uncertainty of different action and their potential of returning higher rewards than the current estimated maximum reward. One way to do it is via following:\useshortskip
-\begin{equation}
-    A_t \doteq \underset{a}{argmax}[Q_t(a) + c\sqrt{\dfrac{\ln{t}}{N_t(a)}}]
-\end{equation}
-Where $N_t(a)$ denotes the number of times action $a$ has been selected prior to time $t$. $c $ control the degree of exploration.
-\section{Gradient Bandit Algorithm}
-Now we try to learn a numerical preference for each action $a$ denoted by $H_t(a)$. Larger preference implies more probability of taking the action, there is not interpretation in terms of reward. Only the relative preference matters and absolute values carry no significance. 
-\begin{equation}
-    Pr{A_t = a} \doteq \dfrac{\exp^{H_t(a)}}{\sum_{b=1 }^{k}exp^{H_t(b)}} \doteq \pi_t(a)
-\end{equation}
-Update rules for the preference of action.
-\begin{equation}
-    \begin{split}
-        H_{t+1}(A_t) &\doteq H_t (A_t) + \alpha(R_t - \hat{R}_t)(1 - \pi_t(A_t)), \text{and}\\
-        H_{t+1}(a) &\doteq H_t(a) - \alpha(R_t - \hat{R}_t)\pi_t(a), \text{ for all $a \neq A_t$}
-    \end{split}
-\end{equation}
-Here $\hat{R}_t$ is the average of all rewards up to the time $t$, including it. 
-
-
-
+%\begin{align*}
+%	\vp(s) &= \Ep[G_t | S_t = s] \\
+%	&= \Ep [R_{t+1} + \gamma G_{t+1} | S_t = s]\\
+%	&= \Ep[R_{t+1}  | S_t= s] + \gamma \Ep[G_{t+1} | S_t= s]\\
+%	&= \sum_{r,  a} r \times \pi(a|s) \times p(r|s,a) + \gamma  \Ep[G_{t+1} | S_t= s]\\
+%	&= \sum_{r,  a} r \pi(a|s)  p(r|s,a) +\\
+%	& \gamma  ( \sum_{s'}( \sum_a \pi(a|s)p(s'|s,a)  \Ep[G_{t+1} | S_{t+1} = s']))\\
+%	&= \sum_a \pi(a|s) [  \sum_r r p(r|s,a) + \\
+%	&\gamma \sum_{s'}p(s'|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+%	&= \sum_a \pi(a|s) [  \sum_{r,s'} r p(s',r|s,a) +\\
+%	& \gamma \sum_{s',r}p(s',r|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+%	&= \sum_a \pi(a|s) \sum_{r,s'} p(s',r|s,a)[ r + \gamma \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+%	&= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma \vp(s')] \forall s \in \state
+%\end{align*}
+%
+%%\subsection{Proof of policy Improvement (I have done this in the exercise solutions)}
+%%\begin{align*}
+%%	\vp(s) & \leq \qp(s,\pi'(s))\\
+%%	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) }[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s, A_t = \pi'(s)]\\
+%%	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) ,a \sim \pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
+%%	& \text{ Shortening the notation}\\
+%%	&= \E_{\pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
+%%	& \text{Applying $\pi'$ on another step we get}\\
+%%	& \leq  \E_{\pi'}[ R_{t+1} + \gamma \qp(S_{t+1}, \pi'(S_{t+1}) | S_t = s]\\
+%%	& = \E_{\pi'}[ R_{t+1} + \gamma  \E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1}]    | S_t = s]\\
+%%	&\text{Continued in the exercise solutions}
+%%\end{align*}
+%
+%
+%\subsection{Policy Improvement Theorem Proof}
+%I have done this proof in my collection of solutions for the book I will be attaching that as a separate presentation.
 
 
 \bibliographystyle{plain}

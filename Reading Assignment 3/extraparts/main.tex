@@ -1,0 +1,124 @@
+
+% -------------------------------------------------------------------------
+
+\documentclass{article}
+\usepackage{float}
+\usepackage[margin=1.5in]{geometry} % Please keep the margins at 1.5 so that there is space for grader comments.
+\usepackage{amsmath,amsthm,amssymb,hyperref}
+\usepackage{algorithmic}
+%\usepackage[options ]{algorithm2e}
+\usepackage{algorithm2e}
+\usepackage{dsfont}
+\newcommand{\R}{\mathbf{R}}  
+\newcommand{\Z}{\mathbf{Z}}
+\newcommand{\N}{\mathbf{N}}
+\newcommand{\Q}{\mathbf{Q}}
+\DeclareMathOperator{\qp}{q_\pi} % indicates the the q vlaue function following policy pi
+\DeclareMathOperator{\vp}{v_\pi} % value funciton following policy pi
+\DeclareMathOperator{\rhp}{\rho_{\pi}} % the probability fgunciton for following policy pi
+\DeclareMathOperator{\state}{\mathcal{S}}
+\DeclareMathOperator{\action}{\mathcal{A}}
+\DeclareMathOperator{\reward}{\mathcal{R}}
+\DeclareMathOperator{\E}{\mathds{E}}
+\DeclareMathOperator{\Ep}{\E_\pi}
+\DeclareMathOperator{\vpd}{v_{\pi'}}
+\DeclareMathOperator{\qpd}{q_{\pi'}}
+\DeclareMathOperator{\maxa}{\underset{a}{\text{max }}}
+\DeclareMathOperator{\dynamics}{\sum_{s',r} p(s',r|s,a)}
+\DeclareMathOperator{\argmaxa}{\underset{a}{\text{argmax }}}
+\newenvironment{theorem}[2][Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{claim}[2][Claim]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{proposition}[2][Proposition]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollary]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\newenvironment{solution}{\begin{proof}[Solution]}{\end{proof}}
+
+\begin{document}
+
+\large % please keep the text at this size for ease of reading.
+
+
+{  % Replace with appropriate page number 
+\hfill Dhawal Gupta}
+
+\begin{center}
+Extra Parts\end{center}
+\vspace{0.05in}
+
+% -----------------------------------------------------
+% The "enumerate" environment allows for automatic problem numbering.
+% To make the number for the next problem, type " \item ". 
+% To make sub-problems such as (a), (b), etc., use an "enumerate" within an "enumerate."
+% -----------------------------------------------------
+\section{Proofs}
+\subsection{Proof of $\vp(s)$}
+\begin{align*}
+	\vp(s) &= \Ep[G_t | S_t = s] \\
+	&= \Ep [R_{t+1} + \gamma G_{t+1} | S_t = s]\\
+	&= \Ep[R_{t+1}  | S_t= s] + \gamma \Ep[G_{t+1} | S_t= s]\\
+	&= \sum_{r,  a} r \times \pi(a|s) \times p(r|s,a) + \gamma  \Ep[G_{t+1} | S_t= s]\\
+	&= \sum_{r,  a} r \pi(a|s)  p(r|s,a) +\\
+	& \gamma  ( \sum_{s'}( \sum_a \pi(a|s)p(s'|s,a)  \Ep[G_{t+1} | S_{t+1} = s']))\\
+	&= \sum_a \pi(a|s) [  \sum_r r p(r|s,a) + \\
+	&\gamma \sum_{s'}p(s'|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+	&= \sum_a \pi(a|s) [  \sum_{r,s'} r p(s',r|s,a) +\\
+	& \gamma \sum_{s',r}p(s',r|s,a) \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+	&= \sum_a \pi(a|s) \sum_{r,s'} p(s',r|s,a)[ r + \gamma \Ep[G_{t+1} | S_{t+1} = s']  ]\\
+	&= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r + \gamma \vp(s')] \forall s \in \state
+\end{align*}
+\subsection{Proof of Policy Improvement}
+\begin{align*}
+	\vp(s) & \leq \qp(s,\pi'(s))\\
+	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) }[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s, A_t = \pi'(s)]\\
+	&= \E_{R_{t+1},S_{t+1} \sim p(s',r|s,a) ,a \sim \pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
+	& \text{ Shortening the notation}\\
+	&= \E_{\pi'}[ R_{t+1}+ \gamma \vp(S_{t+1}) | S_t = s]\\
+	& \text{Applying $\pi'$ on another step we get}\\
+	& \leq  \E_{\pi'}[ R_{t+1} + \gamma \qp(S_{t+1}, \pi'(S_{t+1}) | S_t = s]\\
+	& = \E_{\pi'}[ R_{t+1} + \gamma  \E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1}]    | S_t = s]\\
+	& = \E_{\pi'} [ R_{t+1} | S_t = s]+ \gamma   \E_{\pi'} [ \E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1}]    | S_t = s]\\
+	& =  \sum_a \pi'(a|s) \sum_{r} p(r|s,a) r + \gamma   \sum_a \pi'(a|s) \sum_{s'} p(s'|s,a)\E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1} = s']    \\
+	& =  \sum_a \pi'(a|s) \sum_{s',r} p(s',r|s,a) r + \gamma   \sum_a \pi'(a|s) \sum_{s',r} p(s',r|s,a)\E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1} = s']    \\
+	& =  \sum_a \pi'(a|s) \sum_{s',r} p(s',r|s,a)  ( r + \gamma \E_{\pi'}[R_{t+2} + \gamma \vp(S_{t+2}) | S_{t+1} = s']   )\\
+	& \text{expanding the inside expectation just like the outside}\\
+	& =  \sum_a \pi'(a|s) \sum_{s',r} p(s',r|s,a)  ( r + \gamma\sum_a \pi'(a'|s') \sum_{s'',r'} p(s'',r'|s',a')  ( r' + \gamma \vp(s'') )   )\\
+	& \text{ as we know $\sum_{a'} \pi'(a'|s') \sum_{s'',r'} p(s'',r'|s',a') = \sum_{a',s'',r'} p_{\pi'}(a',r',s'' | s') = 1$}\\
+	&\text{ and not dependent on $r$}\\
+	& =  \sum_a \pi'(a|s) \sum_{s',r} p(s',r|s,a)  ( \sum_{a'} \pi'(a'|s')  \sum_{s'',r'} p(s'',r'|s',a') r + \\
+	& \qquad \gamma\sum_{a'} \pi'(a'|s') \sum_{s'',r'} p(s'',r'|s',a')  ( r' + \gamma \vp(s'') )   )\\
+	& =  \sum_a \pi'(a|s) \sum_{s',r} p(s',r|s,a)  \sum_{a'} \pi'(a'|s')  \sum_{s'',r'} p(s'',r'|s',a') (r +  \gamma  ( r' + \gamma \vp(s'') )   )\\
+	& =  \sum_a \pi'(a|s) \sum_{s',r} p(s',r|s,a)  \sum_{a'} \pi'(a'|s')  \sum_{s'',r'} p(s'',r'|s',a') (r +  \gamma  r' + \gamma^2 \vp(s'') )   )\\
+	& = \sum_{a,s',r} p_{\pi'}(s',r,a|s ) \sum_{a',s'',r'} p_{\pi'}(s'',r',a'|s' )(r +  \gamma  r' + \gamma^2 \vp(s'') )   )\\
+	&  \text{ as internal expression is not dependent on $a$ and $a'$ we can sum on them}\\
+	\end{align*}
+\begin{align*}
+	& = \sum_{s',r} p_{\pi'}(s',r|s ) \sum_{s'',r'} p_{\pi'}(s'',r'|s' ) (r +  \gamma  r' + \gamma^2 \vp(s'') ) )\\
+	& = \sum_{r, s',r', s''} p_{\pi'}(s',r|s ) p_{\pi'}(s'',r'|s' ) (r +  \gamma  r' + \gamma^2 \vp(s'') ) )\\
+	& \text{ we can write this in terms of $a,b,c,d,e$ for ease of readbaility}\\
+	& = p(a,b | c) p(d, e | a)= p(a|b, c) p(b|c) p(d, e|a) \\
+	& = \sum_{r, s',r', s''} p_{\pi'}(s'|r,s ) p_{\pi'}(r|s) p_{\pi'}(s'',r'|s' ) (r +  \gamma  r' + \gamma^2 \vp(s'') ) )\\
+	& \text{ we can write $p_{\pi'}(s'',r'|s' ) = p_{\pi'}(s'',r'|s' , s, r)$ }\\& \quad \text{as its markov they are equal as they are not dependent on $s$ and $r$ and only on $s'$}\\
+	& = \sum_{r, s',r', s''} p_{\pi'}(s'|r,s ) p_{\pi'}(r|s) p_{\pi'}(s'',r'|s' , s, r) (r +  \gamma  r' + \gamma^2 \vp(s'') ) )\\
+	& = \sum_{r, s',r', s''}  p_{\pi'}(r|s) p_{\pi'}(s'',r',s'|  s, r) (r +  \gamma  r' + \gamma^2 \vp(s'') ) )\\
+	& = \sum_{r, s',r', s''}   p_{\pi'}(s'',r',s', r|  s) (r +  \gamma  r' + \gamma^2 \vp(s'') ) )\\
+	& \text{ we can sum on $s'$ as the independent expression doesnt containt hat term}\\
+	& = \sum_{r,r', s''}   p_{\pi'}(s'',r', r|  s) (r +  \gamma  r' + \gamma^2 \vp(s'') ) )\\
+	& = \E_{\pi'} [R_{t+1} + \gamma R_{t+2} + \gamma^2 \vp(S_{t+2}) | S_t = s]
+\end{align*}
+
+
+
+% ---------------------------------------------------
+% Anything after the \end{document} will be ignored by the typesetting.
+% ----------------------------------------------------
+
+\end{document}
+

@@ -9,14 +9,7 @@
 \BOOKMARK [2][-]{subsection.2.2}{Policy Improvement}{section.2}% 9
 \BOOKMARK [2][-]{subsection.2.3}{Policy Iteration}{section.2}% 10
 \BOOKMARK [2][-]{subsection.2.4}{Value Iteration}{section.2}% 11
-\BOOKMARK [1][-]{section.3}{Proofs}{}% 12
-\BOOKMARK [2][-]{subsection.3.1}{Proof of `39`42`"613A``45`47`"603Av\(s\)}{section.3}% 13
-\BOOKMARK [2][-]{subsection.3.2}{Proof of policy Improvement \(I have done this in the exercise solutions\)}{section.3}% 14
-\BOOKMARK [2][-]{subsection.3.3}{Notation}{section.3}% 15
-\BOOKMARK [2][-]{subsection.3.4}{Terms}{section.3}% 16
-\BOOKMARK [1][-]{section.4}{Action-value Methods}{}% 17
-\BOOKMARK [1][-]{section.5}{Incremental Implementation}{}% 18
-\BOOKMARK [1][-]{section.6}{Tracking a Non Stationary Problem}{}% 19
-\BOOKMARK [1][-]{section.7}{Optimistic Initial Values}{}% 20
-\BOOKMARK [1][-]{section.8}{Upper-Confidence-Bound Action Selection }{}% 21
-\BOOKMARK [1][-]{section.9}{Gradient Bandit Algorithm}{}% 22
+\BOOKMARK [2][-]{subsection.2.5}{Asynchronous DP}{section.2}% 12
+\BOOKMARK [2][-]{subsection.2.6}{Generalized Policy Iteration}{section.2}% 13
+\BOOKMARK [2][-]{subsection.2.7}{Efficiency of Dynamic Programming}{section.2}% 14
+\BOOKMARK [1][-]{section.3}{Proofs}{}% 15

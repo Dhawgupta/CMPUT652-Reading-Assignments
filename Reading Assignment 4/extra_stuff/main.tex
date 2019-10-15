@@ -1,0 +1,67 @@
+\documentclass{article}
+\usepackage{float}
+\usepackage[margin=1.5in]{geometry} % Please keep the margins at 1.5 so that there is space for grader comments.
+\usepackage{amsmath,amsthm,amssymb,hyperref}
+\usepackage{algorithmic}
+%\usepackage[options ]{algorithm2e}
+\usepackage{algorithm2e}
+\usepackage{dsfont}
+\usepackage{hyperref}
+\newcommand{\R}{\mathbf{R}}  
+\newcommand{\Z}{\mathbf{Z}}
+\newcommand{\N}{\mathbf{N}}
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{ \thb}{\textbf{\theta} } 
+\DeclareMathOperator{\x}{\textbf{x}}
+\DeclareMathOperator{\qp}{q_\pi} % indicates the the q vlaue function following policy pi
+\DeclareMathOperator{\vp}{v_\pi} % value funciton following policy pi
+\DeclareMathOperator{\rhp}{\rho_{\pi}} % the probability fgunciton for following policy pi
+\DeclareMathOperator{\state}{\mathcal{S}}
+\DeclareMathOperator{\action}{\mathcal{A}}
+\DeclareMathOperator{\reward}{\mathcal{R}}
+\DeclareMathOperator{\E}{\mathds{E}}
+\DeclareMathOperator{\Ep}{\E_\pi}
+\DeclareMathOperator{\vpd}{v_{\pi'}}
+\DeclareMathOperator{\qpd}{q_{\pi'}}
+\DeclareMathOperator{\maxa}{\underset{a}{\text{max }}}
+\DeclareMathOperator{\dynamics}{\sum_{s',r} p(s',r|s,a)}
+
+\begin{document}
+
+
+Here we are considering all gradients wrt to $\theta$ the parameter for the policy
+
+\begin{align*}
+    \nabla v_{\pi}(s) &= \nabla[\sum_a \pi(a| s)q_\pi(s,a)]\\
+    & \text{(This is how it is defined)}\\
+    &= \sum_a [\nabla \pi(a|s) \qp(s,a)] + \sum_a [\pi(a|s) \nabla [\sum_{s',r} p(s',r|s,a) \gamma(r + \vp(s'))]]\\
+    &\text{ We define $\phi(s) = \sum_a \nabla \pi(a|s) \qp(s,a)$, its like a policy grad for each action and value }\\
+    &= \phi(s) + \gamma\sum_a \pi(a|s)\sum_{s'}p(s'|s,a)\nabla \vp(s')\\
+    &= \phi(s) + \gamma \sum_{s'}\rhp(s \rightarrow s',k=1)\nabla \vp(s')\\
+    &\text{Expanding on $v(s')$}\\
+    &= \phi(s) + \gamma \sum_{s'}\rhp(s \rightarrow s',k=1)[\phi(s') + \sum_{a'}\pi(a'|s') \sum_{s''}p(s''|s',a')\gamma\nabla\vp(s'')]\\
+    &= \phi(s) + \gamma \sum_{s'}\rhp(s \rightarrow s',k=1)\phi(s') + \\
+    & \qquad\qquad \gamma^2 \sum_{s'}\rhp(s \rightarrow s',k=1)\sum_{a'}\pi(a'|s') \sum_{s''}p(s''|s',a')\nabla\vp(s'')\\
+    &= \phi(s) + \gamma \sum_{s'}\rhp(s \rightarrow s',k=1)\phi(s') + \\
+    & \qquad\qquad \gamma^2 \sum_{s''}\sum_{s'}\rhp(s \rightarrow s',k=1)\rhp(s' \rightarrow s'', k = 1)\nabla\vp(s'')\\
+    &= \phi(s) + \gamma \sum_{s'}\rhp(s \rightarrow s',k=1)\phi(s') + \gamma^2 \sum_{s''}\rhp(s \rightarrow s'', k = 2)\nabla\vp(s'')\\
+    &= \phi(s) + \gamma \sum_{s'}\rhp(s \rightarrow s',k=1)\phi(s') + \gamma^2 \sum_{s''}\rhp(s \rightarrow s'', k = 2)\phi(s'') +\\
+    & \qquad \gamma^3 \sum_{s'''}\rhp(s \rightarrow s''', k = 3)\phi(s''') + \ldots + \gamma^n \sum_{s^n}\rhp(s \rightarrow s^n, k = n)\phi(s^n) + \\
+    &\qquad \gamma^{n+1} \sum_{s^{n+1}}\rhp(s \rightarrow s^{n+1}, k = n+1)\nabla\vp(s^{n+1})\\
+    &= \sum_{x \in \mathcal{S}}\sum_{k = 0}^{\infty} \gamma^k \rhp(s \rightarrow x, k)\phi(x)\\
+    &= \sum_{x \in \mathcal{S}}\sum_{k = 0}^{\infty} \gamma^k \rhp(s \rightarrow x, k) \sum_a \nabla \pi(a|x) \qp(x,a)\\
+\end{align*}
+So we get the policy gradient Theorem for $\gamma$
+
+Defining the $\rho(s \rightarrow s',k, \pi)$ function. It tells use about the probability of reaching from state $s$ to state $s'$ in k steps.\\
+\\
+$\rho(s \rightarrow s, k= 0) = 1$ Probability one\\
+$\rho(s \rightarrow s', k = 1, \pi) = \sum_a \pi(a|s) p(s'|s,a)$ One step transition probability following policy $\pi$\\
+
+$\rhp(s \rightarrow x , k = t+1) = \sum_{s'}\rhp(s \rightarrow s', t)\rhp(s' \rightarrow x, 1)$\\
+Now we can extend the PG Theorem to get the objective update wrt to the initial value function gradient update
+\begin{align*}
+    \nabla J(\theta) = \nabla \vp(s_0)\\
+    &= \sum_{x \in \mathcal{S}}\sum_{k = 0}^{\infty} \gamma^k \rhp(s \rightarrow x, k) \sum_a \nabla \pi(a|x) \qp(x,a)\\
+\end{align*}
+\end{document}

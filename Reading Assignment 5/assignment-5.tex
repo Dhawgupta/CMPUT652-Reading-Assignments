@@ -1,0 +1,171 @@
+\documentclass[twocolumn,11pt]{article}
+\usepackage[    % Much better micro typography
+protrusion=true, % adjust to your eye needs 
+expansion=true,
+tracking=true,
+kerning=true,
+spacing=true,
+%letterspace=50, % well spaced smallcaps
+shrink=40,      % may be 20 or less is good   
+factor=1000]    % may be less that 1000 
+{microtype} 
+\usepackage{dsfont}
+\usepackage[margin=1cm,bmargin=1.4cm]{geometry} % little margins 
+%% making the spacing for subsection and section
+%\usepackage{titlesec}
+%\titlespacing*{\section}{0pt}{1.1\baselineskip}{\baselineskip}
+
+%\setlength{\parskip}{0cm}
+%\setlength{\parindent}{1em}
+%    \usepackage[compact]{titlesec}
+%    \titlespacing{\section}{0pt}{2ex}{1ex}
+%    \titlespacing{\subsection}{0pt}{1ex}{0ex}
+%    \titlespacing{\subsubsection}{0pt}{0.5ex}{0ex}
+
+\usepackage{lipsum} % dummy text
+\usepackage[toc,page]{appendix}
+\usepackage{setspace} 
+\usepackage{hyperref}
+\usepackage{mathtools, nccmath}
+\setstretch{0.8}      % same as \linespread{.8} 
+\usepackage{amsmath,amsthm,amssymb,hyperref}
+\usepackage{dsfont}
+\usepackage{amsmath}
+% \usepackeg{}
+\usepackage{color}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\eE}{\hat{E}} % the emprirical expectation
+\DeclareMathOperator{\State}{\mathcal{S}}
+\DeclareMathOperator{\Action}{\mathcal{A}}
+\DeclareMathOperator{\Reward}{\mathcal{R}}
+%\DeclareMathOperator{\Re}{\mathds{R}}
+\DeclareMathOperator{\w}{\textbf{w}}
+\DeclareMathOperator{\state}{\mathcal{S}}
+\DeclareMathOperator{\action}{\mathcal{A}}
+\DeclareMathOperator{\reward}{\mathcal{R}}\DeclareMathOperator{\I}{\textbf{I}}
+\DeclareMathOperator{\qp}{q_\pi} % indicates the the q vlaue function following policy pi
+\DeclareMathOperator{\vp}{v_\pi} % value funciton following policy pi
+\DeclareMathOperator{\rhp}{\rho_{\pi}} % the probability fgunciton for following policy pi
+\DeclareMathOperator{\Ep}{\E_\pi}
+\DeclareMathOperator{\bb}{\textbf{b}}
+%\DeclareMathOperator{\b}{ \textbf{b} }
+\DeclareMathOperator{\A}{ \textbf{A} }
+\DeclareMathOperator{\D}{ \textbf{D} }
+%\DeclareMathOperator{\P}{ \textbf{P} }
+\DeclareMathOperator{\mub}{\textbf{\mu}}
+\DeclareMathOperator{\vpd}{v_{\pi'}}
+\DeclareMathOperator{\qpd}{q_{\pi'}}
+\DeclareMathOperator{\maxa}{\underset{a}{\text{max }}}
+\DeclareMathOperator{\Be}{B_\pi} % the bellman operator
+\DeclareMathOperator{\x}{\textbf{x}}
+\DeclareMathOperator{\argmaxa}{\underset{a}{\text{argmax }}}
+\DeclareMathOperator{\VE}{\overline{VE}}
+\DeclareMathOperator{\BE}{\overline{BE}}
+\DeclareMathOperator{\PBE}{\overline{PBE}}
+\DeclareMathOperator{\X}{\textbf{X}}
+
+\DeclareMathOperator{\dynamics}{\sum_{s',r} p(s',r|s,a)}
+\DeclareMathOperator{\vw}{v_{\w}}
+\DeclareMathOperator{\ns}{|\state|} % number of elements in state space
+\DeclareMathOperator{\vpt}{v_{\pi_\theta}}
+\DeclareMathOperator{\pit}{\pi_\theta}
+\DeclareMathOperator{\pito}{\pi_{\theta_{\text{old}}}}
+\DeclareMathOperator{\eA}{\bar{A}} % empirical advantage
+
+\makeatletter         
+\def\@maketitle{   % custom maketitle 
+{\Large \bfseries \color{red} \@title}
+{\scshape updated by:} \@author ~ at  \@date \par 
+\smallskip \hrule \bigskip }
+
+% custom section 
+\renewcommand{\section}{\@startsection
+{section}%                   % the name
+{2}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+% custom section 
+\renewcommand{\subsection}{\@startsection
+{subsection}%                   % the name
+{1}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+\makeatother
+
+
+% 
+\title{PPO \& DRL }
+\author{Dhawal Gupta}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Proximal Policy Optimization}
+\textbf{Policy  Gradient} methods, compute an estimate  of the gradient of the objective function with respect to a parametrized policy (rather than action-value function in q-learning) to go stochastic gradient ascent directly on the policy. The most natural form of the gradient  is \useshortskip
+\begin{align*}
+\hat{g} = \eE_t \left[ \nabla_\theta \log \pi_\theta ( a_t \ s_t) \eA_t \right]
+\end{align*}, where $\pi_\theta$ is the stochastic parameterized policy and$\eA_t$ is the emprirical advantage function at time 't', $\eE[\dots]$ is the empirical advantage, and $\hat{g}$ can be obtained by taking a gradient of $L^{PG}(\theta) = \eE \left[ \log \pit (a_t|s_t) \eA_t\right]$
+
+\subsection{Trust Region Methods}
+In this cases we often try to define a surrogate objective function that is a lower bound of the true objective function, and maximize iteratively on this lower bound. They are based on a constrained optimization of the following objective \useshortskip
+\begin{align*}
+\underset{\theta}{\text{maximize}} &\eE_t\left[ \dfrac{\pit(a_t | s_t)}{\pito(a_t | s_t)} \eA_t \right] \\
+\text{subject to } & \eE_t \left[ \text{KL} [ \pito( . | s_t), \pit(. | s_t)]\right] \leq \delta
+\end{align*}, and the paper mentions that the objective could be solved by making a linear approximation of objective and quadratic approximation of the constrained using most probably a Taylor series expansion of the same.
+% @dhawal \cite{ the medium blog over here}
+TRPO proposes to make it a penalty based optimization problem rather than a constrained based \useshortskip
+\begin{align} \label{eq:kl_penalty }\underset{\theta}{\text{maximize}} \eE_t\left[ \dfrac{\pit(a_t | s_t)}{\pito(a_t | s_t)} \eA_t - \beta \text{KL} [ \pito( . | s_t), \pit(. | s_t)]\right] 
+\end{align}
+\subsection{Clipped Surrogate Objective}
+From here the contribution of the paper start where they introduce another surrogate objective which doesn't require calculating a second order derivative, $r_t(\theta) = \tfrac{\pit(a_t|s_t)}{\pito(a_t | s_t)}$.
+
+TRPO maximizes the following surrogate with a constraint \useshortskip
+\begin{align*}
+L^{CPI} = \eE \left[ r_t (\theta) \eA_t \right], \quad r(\theta_{old} ) = 1
+\end{align*}, the propose a new objective which tries to restrict large changes in the policy i.e.  \useshortskip
+\begin{align*}
+L^{CLIP}  (\theta) = \eE_t \left[ \text{min} (  r_t(\theta) \eA_t,  \text{clip}(r_t(\theta), 1-\epsilon, 1 + \epsilon   ) \eA_t)\right]
+\end{align*}
+where $\epsilon$ is a hyper-parameter, this clips the  change in the policy by moving out in the factor of $1 + \epsilon$ in the case of improvement and $1 - \epsilon$ in the case where  we want to decrease the probability of the action.
+
+
+\subsection{Adaptive KL Penalty Coefficient}
+Knowing the problem of setting in $\beta $ in Eq:\ref{eq:kl_penalty }, we introduce an adaptive KL penalty, to achieve some target KL difference $d_{targ}$ each update, i.e. using the following routine. Compute : 
+$d =  \eE_t \left[ \text{KL}[\pito (.| s_t), \pit (. | s_t)] \right]$, if $d < d_{targ} / 1.5 , \beta \leftarrow \beta/2$ if $d > d_{targ} / 1.5 , \beta \leftarrow \beta \times 2$.
+
+\subsection{Calculating Advantage $\eA_t$}
+Most techniques for computing variance reduced advantage function use a state value function $V(s)$. If our function approximation shares parameters for the policy and the value function, we must use a objective function with value function error as well. Entropy can also be added to encourage exploration.
+\begin{align*}
+L_t^{CLIP + VF + S}(\theta) = \eE_t \left[ L_t^{CLIP}(\theta)  - c_1 L_t^{VF} (\theta) + c_2 S[\pit ](s_t)\right]
+\end{align*}
+where $c_1, c_2$ are coefficients, $S$ denotes entropy bonus, and $L_t^{VF}$ is a squared-error loss $(V_\theta (s_t) - V_t^{targ})^2$. The advantage function is calculated as 
+\begin{align*}
+\eA_t &= -V(s_t) + r_t + \gamma r_{t+1} + \dots + \gamma^{T-t + 1}r_{T-1} + \gamma ^{T-t}V(s_T)\\
+&= \delta-t + (\gamma\lambda)\delta_{t+1} + \dots + (\gamma \lambda)^{T - t + 1}\delta_{T-1}\\
+& \text{where } \delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
+\end{align*}
+where $t in [0,T]$, where length T trajectory segment and for $\lambda = 1$ we get the same expression as above. The best performing parameters for PPO is $\epsilon = 0.2$
+
+\section{Deep Reinforcment Learning that Matters}
+This section discusses challenges posted by reproducibility, proper experimental techniques and reporting procedures. This will particularly focus on investigation of Policy Gradients methods in the domain of continuous control, using deep neural networks.
+
+\subsection{PG Objectives}
+This study will mainly pertain to 4 algorithms i.e. Trust Region Policy Optimization (TRPO), Deep Deterministic Policy Gradients (DDPG), Proximal Policy Optimization (PPO) and Actor Critic using Kronecker-Factored Trust Region (ACKTR). The general objective is  often given  by $p(\theta,s_0) = \E_{\pit} [ \sum_{t=0}^{\infty} \gamma^t r(s_t) | s_0]$, and using PG theorem we can get the following gradient update $\tfrac{\partial p(\theta, s_0)}{\partial \theta} = \sum_s \mu_{\pit} (s | s_0) \sum_a \tfrac{\partial \pit (a|s)}{\partial \theta } Q_{\pit} (s,a)$, here $\mu_{\pit} (s|s_0) = sum_{t=0}^{\infty} \gamma^t P(s_t = s | s_0)$where the state transition distribution and action value functions gradients are not required simplifying the problem to a large extent. The PPO and TRPO introduce surrogate objective functions that are explained in the previous section, which act as the lower bound for the objective functions.
+\subsection{Experimental Analysis}
+The use OpenAI baselines implementation on the some of the OpenAI Gym Environments and Mujoco envs.  A 2 layer MLP is used with different activation functions, DDPG - (64,64, ReLU), TRPO and PPO - (64,64,tanh), ACKTR - (64,64,tanh) actor and (64,64, ELU) for the critic. 
+
+\textbf{HyperParameters } : We will  study the effect of hyper parameters on the performance of RL algorithms, starting from the Network Architecture, Reward, Random Seeds, and Environment and Codebases.
+Using reward normalization is something which is highly dependent on the environment. Random Seed can not often perform same i.e. algorithm performance can actually depend on the the random seed. Environment, when  proposing a new novel algorithm it is indispensable to show it across multiple domains. Codebases also have a great affect on the performance.
+
+\bibliographystyle{plain}
+
+\bibliography{reference}
+
+\end{document}

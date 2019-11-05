@@ -1,0 +1,171 @@
+\documentclass[twocolumn,11pt]{article}
+\usepackage[    % Much better micro typography
+protrusion=true, % adjust to your eye needs 
+expansion=true,
+tracking=true,
+kerning=true,
+spacing=true,
+%letterspace=50, % well spaced smallcaps
+shrink=40,      % may be 20 or less is good   
+factor=1000]    % may be less that 1000 
+{microtype} 
+\usepackage{dsfont}
+\usepackage[margin=1cm,bmargin=1.4cm]{geometry} % little margins 
+%% making the spacing for subsection and section
+%\usepackage{titlesec}
+%\titlespacing*{\section}{0pt}{1.1\baselineskip}{\baselineskip}
+
+%\setlength{\parskip}{0cm}
+%\setlength{\parindent}{1em}
+%    \usepackage[compact]{titlesec}
+%    \titlespacing{\section}{0pt}{2ex}{1ex}
+%    \titlespacing{\subsection}{0pt}{1ex}{0ex}
+%    \titlespacing{\subsubsection}{0pt}{0.5ex}{0ex}
+
+\usepackage{lipsum} % dummy text
+\usepackage[toc,page]{appendix}
+\usepackage{setspace} 
+\usepackage{hyperref}
+\usepackage{mathtools, nccmath}
+\setstretch{0.8}      % same as \linespread{.8} 
+\usepackage{amsmath,amsthm,amssymb,hyperref}
+\usepackage{dsfont}
+\usepackage{amsmath}
+% \usepackeg{}
+\usepackage{color}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\eE}{\hat{E}} % the emprirical expectation
+\DeclareMathOperator{\State}{\mathcal{S}}
+\DeclareMathOperator{\Action}{\mathcal{A}}
+\DeclareMathOperator{\Reward}{\mathcal{R}}
+%\DeclareMathOperator{\Re}{\mathds{R}}
+\DeclareMathOperator{\w}{\textbf{w}}
+\DeclareMathOperator{\state}{\mathcal{S}}
+\DeclareMathOperator{\action}{\mathcal{A}}
+\DeclareMathOperator{\reward}{\mathcal{R}}\DeclareMathOperator{\I}{\textbf{I}}
+\DeclareMathOperator{\qp}{q_\pi} % indicates the the q vlaue function following policy pi
+\DeclareMathOperator{\vp}{v_\pi} % value funciton following policy pi
+\DeclareMathOperator{\rhp}{\rho_{\pi}} % the probability fgunciton for following policy pi
+\DeclareMathOperator{\Ep}{\E_\pi}
+\DeclareMathOperator{\bb}{\textbf{b}}
+%\DeclareMathOperator{\b}{ \textbf{b} }
+\DeclareMathOperator{\A}{ \textbf{A} }
+\DeclareMathOperator{\D}{ \textbf{D} }
+%\DeclareMathOperator{\P}{ \textbf{P} }
+\DeclareMathOperator{\mub}{\textbf{\mu}}
+\DeclareMathOperator{\vpd}{v_{\pi'}}
+\DeclareMathOperator{\qpd}{q_{\pi'}}
+\DeclareMathOperator{\maxa}{\underset{a}{\text{max }}}
+\DeclareMathOperator{\Be}{B_\pi} % the bellman operator
+\DeclareMathOperator{\x}{\textbf{x}}
+\DeclareMathOperator{\argmaxa}{\underset{a}{\text{argmax }}}
+\DeclareMathOperator{\VE}{\overline{VE}}
+\DeclareMathOperator{\BE}{\overline{BE}}
+\DeclareMathOperator{\PBE}{\overline{PBE}}
+\DeclareMathOperator{\X}{\textbf{X}}
+
+\DeclareMathOperator{\dynamics}{\sum_{s',r} p(s',r|s,a)}
+\DeclareMathOperator{\vw}{v_{\w}}
+\DeclareMathOperator{\ns}{|\state|} % number of elements in state space
+\DeclareMathOperator{\vpt}{v_{\pi_\theta}}
+\DeclareMathOperator{\pit}{\pi_\theta}
+\DeclareMathOperator{\pito}{\pi_{\theta_{\text{old}}}}
+\DeclareMathOperator{\eA}{\bar{A}} % empirical advantage
+
+\makeatletter         
+\def\@maketitle{   % custom maketitle 
+{\Large \bfseries \color{red} \@title}
+{\scshape updated by:} \@author ~ at  \@date \par 
+\smallskip \hrule \bigskip }
+
+% custom section 
+\renewcommand{\section}{\@startsection
+{section}%                   % the name
+{2}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+% custom section 
+\renewcommand{\subsection}{\@startsection
+{subsection}%                   % the name
+{1}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+\makeatother
+
+
+% 
+\title{SenseAct \& Survey }
+\author{Dhawal Gupta}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Benchmarking RL on Real World Robots}
+There is lack of benchmarking tasks on physical robots for the case of studying Reinforcement Learning algorithms  on them. The  work introduces several RL  tasks with commercially available robots. The  work  introduces 6 RL  tasks on based on 3  commercially available robots. They test 4 policy gradient algorithms i.e.  PPO,  TRPO, DDPG and Soft Q learning (not PG i suppose). The main contributions being 
+\begin{itemize}
+\item Introducing benchmark tasks for physical robots to share  across the community
+\item setting up task conducive to learning
+\item empirical  study  of multiple policy learning algos on multiple physical robots
+\end{itemize} 
+\textbf{Robots used}  : The robots used are 1. \textbf{UR5}  ,  a six joint robotic arm , 2. \textbf{Dynamixel  MX-64AT}  : A servo motor , 3. \textbf{Create 2} , A differential drive robot base.
+\subsection{Tasks}
+\begin{itemize}
+\item UR-Reacher 2 : Actuate the second and third joint from the base by sending angular speeds between [-0.3, +0.3] rad/s. Observation vector is composed of joint angles, joint velocities, previous actions and vector difference between target and fingertip coordinates. Reward function is $R_t = - d_t  + exp(-100 d_t^2)$. Episodes are 4  seconds long , the starting boundary is $0.7m \times 0.5m$.
+\item UR-Reacher 6 : Extended version of Reacher 2  , with addition of another dimension for target position. A box of size : $0.7m \times 0.5m \times 0.4m$.
+\item DXL Reacher : based  on current control, action space is 1D, with control signal  of current between [-100, 100]mA. Reward $R_t = -d_t$.
+\item DXL Tracker : Current  control to allow velocity matching and position tracking of a moving motor. 
+\item Create Mover : Task is to move a robot forward in an area as fast as possible. Areas is 3ft times  2.5 ft, action space is -150mm/s, 150mm/s  for both the wheels. Observation vector contains 6 wall sensors values, and previous actions. 
+\item Create  Docker : objective is to dock to a charging station, which  has a huge positive reward, penalty for bumping. 
+\end{itemize}
+In all the above cases the reward is scaled by the action cycle time in all cases. the  space is normalized between +1  and -1.
+
+\subsection{Experimental Protocol}
+TO measure the  sensitivity  of hyper-parameter within task s and  consistency across tasks, random search of 7 hyper parameters is  performed. 30 Hyper parameters were drawn uniformly in the log scale. All the hyper-parameters were first tested for  UR Reacher 2 task and then  taken forward for other tasks.
+Each run is 150,000 steps (3 hours)  for  UR Rreacher 2 , 200,000 steps (4 hours)  for Reacher 6, 50,000  steps  (45 minutes) for DXL reacher, 150,000 steps (2 hours 15 minutes)  for DXL  Tracker, 40,000 steps (2  hours) Create Mover,  300,000  steps for Create Docker.
+
+\subsection{Findings}
+TRPO seemed to be least  sensitive to its hyperparameters giving good performance on the robots, whereas DDPG didn't perform  too well. Soft Q Learning often resulted in overheating of  DXL (probably due  to the random noise) and jerky movements. Create 2 Docker was  sometimes achieved by  the use  of  TRPO,  which is very difficult to achieve in general from a scripted agent as well. 
+
+\section{Survey  on  Reproducibility}
+Taxonomy of reproducible research 
+\begin{itemize}
+\item \textbf{Repeatability } : same team, running the same experimental setup.  Needed for reporting statistically sound results. 
+\item \textbf{Reproducibility} : Different team , same setup , achieving results within marginals of  experimental error. 
+\item \textbf{Replicability} : differente  team, different experimental  setup. Trying to replicate the results  , without access to the code, data and  environment.
+
+\end{itemize}
+\subsection{Methods}
+The paper  proposes to uniformly configure the RL  experiments by collecting  all the parameters be it agent or the environment into a YAML configuration file. Separate the  algorithms from the environments and  metric collection routines.  
+
+\subsection{Experimental Protocol}
+The task that  they have used is the  UR Reacher 2D. They have reused the OpenAI baselines, and used PPO and TRPO for their evaluations. 
+They task is used partly to investigate  their proposed methodology and to  also check reproducibility. 
+The paper approaches by performing ten runs for each  hyperparameter ,  to determine the statistical significance. Then it approximates the Empirical  distribution function,  using boostrapping on the collected data. 
+Bootstrapping is performed on 10k resamples on the ten average  returns  values to find the  EDF. 
+
+\subsection{Results}
+The paper reports  the repeatability of the code base  to hold alongside the issues that are there  with the  physical hardware. 
+
+The report that they are able to replicate the results that were proposed by  the former paper.
+\subsection{Recommendations}
+\textbf{Reproducing RL results of a reral world robot} is \textbf{DIFFICULT}.\\
+\textbf{Managing Software dependicies} should be reduced to \textbf{minimum} possible. \\
+\textbf{Presetting and reporting random seeds}  is \textbf{essential}\\
+\textbf{Distinguishing btw experimental and library code}\\
+\textbf{Logging of return values}
+\textbf{Reporting Hyper Parameters} is \textbf{Essential}.\\
+\textbf{Extensive  Documentation}\\
+\textbf{Open Source }  you research  
+\bibliographystyle{plain}
+
+
+\bibliography{reference}
+
+\end{document}

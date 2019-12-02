@@ -1,0 +1,189 @@
+\documentclass[twocolumn,11pt]{article}
+\usepackage[    % Much better micro typography
+protrusion=true, % adjust to your eye needs 
+expansion=true,
+tracking=true,
+kerning=true,
+spacing=true,
+%letterspace=50, % well spaced smallcaps
+shrink=40,      % may be 20 or less is good   
+factor=1000]    % may be less that 1000 
+{microtype} 
+\usepackage{dsfont}
+\usepackage[margin=1cm,bmargin=1.4cm]{geometry} % little margins 
+%% making the spacing for subsection and section
+%\usepackage{titlesec}
+%\titlespacing*{\section}{0pt}{1.1\baselineskip}{\baselineskip}
+
+%\setlength{\parskip}{0cm}
+%\setlength{\parindent}{1em}
+%    \usepackage[compact]{titlesec}
+%    \titlespacing{\section}{0pt}{2ex}{1ex}
+%    \titlespacing{\subsection}{0pt}{1ex}{0ex}
+%    \titlespacing{\subsubsection}{0pt}{0.5ex}{0ex}
+
+\usepackage{lipsum} % dummy text
+\usepackage[toc,page]{appendix}
+\usepackage{setspace} 
+\usepackage{hyperref}
+\usepackage{mathtools, nccmath}
+\setstretch{0.8}      % same as \linespread{.8} 
+\usepackage{amsmath,amsthm,amssymb,hyperref}
+\usepackage{dsfont}
+\usepackage{amsmath}
+% \usepackeg{}
+\usepackage{color}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\eE}{\hat{E}} % the emprirical expectation
+\DeclareMathOperator{\State}{\mathcal{S}}
+\DeclareMathOperator{\Action}{\mathcal{A}}
+\DeclareMathOperator{\Reward}{\mathcal{R}}
+%\DeclareMathOperator{\Re}{\mathds{R}}
+\DeclareMathOperator{\w}{\textbf{w}}
+\DeclareMathOperator{\state}{\mathcal{S}}
+\DeclareMathOperator{\action}{\mathcal{A}}
+\DeclareMathOperator{\reward}{\mathcal{R}}\DeclareMathOperator{\I}{\textbf{I}}
+\DeclareMathOperator{\qp}{q_\pi} % indicates the the q vlaue function following policy pi
+\DeclareMathOperator{\vp}{v_\pi} % value funciton following policy pi
+\DeclareMathOperator{\rhp}{\rho_{\pi}} % the probability fgunciton for following policy pi
+\DeclareMathOperator{\Ep}{\E_\pi}
+\DeclareMathOperator{\bb}{\textbf{b}}
+%\DeclareMathOperator{\b}{ \textbf{b} }
+\DeclareMathOperator{\A}{ \textbf{A} }
+\DeclareMathOperator{\D}{ \textbf{D} }
+%\DeclareMathOperator{\P}{ \textbf{P} }
+\DeclareMathOperator{\mub}{\textbf{\mu}}
+\DeclareMathOperator{\vpd}{v_{\pi'}}
+\DeclareMathOperator{\qpd}{q_{\pi'}}
+\DeclareMathOperator{\maxa}{\underset{a}{\text{max }}}
+\DeclareMathOperator{\Be}{B_\pi} % the bellman operator
+\DeclareMathOperator{\x}{\textbf{x}}
+\DeclareMathOperator{\argmaxa}{\underset{a}{\text{argmax }}}
+\DeclareMathOperator{\VE}{\overline{VE}}
+\DeclareMathOperator{\BE}{\overline{BE}}
+\DeclareMathOperator{\PBE}{\overline{PBE}}
+\DeclareMathOperator{\X}{\textbf{X}}
+
+\DeclareMathOperator{\dynamics}{\sum_{s',r} p(s',r|s,a)}
+\DeclareMathOperator{\vw}{v_{\w}}
+\DeclareMathOperator{\ns}{|\state|} % number of elements in state space
+\DeclareMathOperator{\vpt}{v_{\pi_\theta}}
+\DeclareMathOperator{\pit}{\pi_\theta}
+\DeclareMathOperator{\pito}{\pi_{\theta_{\text{old}}}}
+\DeclareMathOperator{\eA}{\bar{A}} % empirical advantage
+
+\makeatletter         
+\def\@maketitle{   % custom maketitle 
+{\Large \bfseries \color{red} \@title}
+{\scshape updated by:} \@author ~ at  \@date \par 
+\smallskip \hrule \bigskip }
+
+% custom section 
+\renewcommand{\section}{\@startsection
+{section}%                   % the name
+{2}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+% custom section 
+\renewcommand{\subsection}{\@startsection
+{subsection}%                   % the name
+{1}%                         % the level
+{0mm}%                       % the indent
+{-0.5\baselineskip}%            % the before skip
+{0.5\baselineskip}%          % the after skip
+{\bfseries\color{blue}}} % the style
+
+\makeatother
+
+
+% 
+\title{Learning  from Demonstration}
+\author{Dhawal Gupta}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Learning from Demonstration is a particular approach to policy learning, where the policy is learned from examples or demonstration provided by the instructor contrary to RL , in which the agent explores. This policy is only defined on those states and actions that it encounters during demonstration. 
+The LfD is broken into 2 phases:
+\textbf{1. }Gathering Examples\\
+\textbf{2. }Deriving a policy from the examples\\
+Using conventional RL, requires the robot to actually visit different states, which is often restricting for robots trying to learn, LfD on the other hand gives there benefits.\\
+\textbf{1. } Doesn't require expert knowledge of domain dynamics\\
+\textbf{2. } Open LfD to non robotics experts making them more commonplace\\
+\textbf{3. } Demonstration acts as an intuitive medium for communication.\\
+\textbf{4. } Practical benefit of focusing the dataset to state-space actually encountered during the task.\\
+\textbf{Problem Formulation : } Demonstrator executed state and actions are recorded, a demonstration is presented as $d_j \in D$ for say $k_j$ observations. $d_j \in \{  (z_j^i, a_j^i)\}, z_j^i \in Z, a_j^i \in A, $ for $i = 0, \ldots , k_j$
+
+\section{Design Choices}
+1. Demonstration Approach :  2 choices are to be made, a.) choice of \textit{demonstrator}, b.) choice of \textit{demonstration techniques}.  
+a.) Choice of demonstrator can also be broken down to a.a) who control the demonstration (scripted agent, human teleoperator), a.b) who executes the demonstration (robot body).
+b.) demonstration techniques deals with the techniques to collect, is it an interactive procedure or a batch procedure. 
+
+2. Problem space continuity : Continuity can be decided by various factors like desired learning behaviour, set if available actions etc. The actions can be broked down to 3 control level though \textbf{a.} Low level motion control, \textbf{b.} Basic high level (action primitives), \textbf{c. } Complex behaviour actions. 
+
+3. Policy Derivation : There are multiple ways to actually go about deriving the policy and it depends upon a lot on the action continuity. There are 3 main policy derivation techniques i.e. a.) \textit{Mapping Technique} , where we try to learn a function mapping from a state to action i.e. $f() : Z \rightarrow A$.
+b.) \textit{System Model} : Data is used to learn the world dynamics i.e. $T(s'|s,a)$ and reward function $R(s)$ to be possibly used by an RL algo to learn the policy.
+c.) \textit{Plans} : This corresponds to more to planning, where it tries to figure out the pre and post conditions of action and then tries to come up with a sequence of actions that reaches to the goal state.
+   
+4. Dataset limitation : The dataset collected is often limited by the teachers policy and capability to do the task, which can be suboptimal when compared to the ability of the learning algorithm. Hence our Learning algorithm should be able to learn beyond the demonstrators capacity. 
+
+\section{Gathering Dataset}
+For a dataset to be successful the learner should be able to use the dataset. In the most best case, the states and actions of the teacher match the state and actions of the student. The challenges which arise between translation of the states in demonstrations to the states usable by the agent, is called as the \textit{Correspondence Issues.}
+Correspondence deals with the identification of mapping between the teacher and the learner, they define it for 2 mappings 1. \textit{record } and 2. \textit{embodiment} mapping. Record (teacher execution $\rightarrow$ recorded execution) mapping refers to whether the exact states and actions observed by the teacher are recorded, Embodiment  (recorded execution  $\rightarrow$ learner) , when states and actions recorded in the dataset exactly those that the learner would observe. The papers splits the LfD data acquisition approaches to 2 categories based on embodiment mapping 
+1. Demonstration  : No embodiment mapping i.e. $g_E(z,a) = I(z,a)$, i.e. demonstration is done on the robotic platform itself.
+2. Imitation : There exists a mapping as demonstration is performed on a platform different from the robot platform. 
+
+\subsection{Demonstration} Is further broken down into two cases i. e. Tele operation and Mimic.\\
+1. \textit{Teleoperation}: Deals with the case when the teacher demonstrates directly on the robotic platform via say teleoperation e.g. joystick , i.e. the robot should be manageable.\\
+2. \textit{Shadowing}  :In this case the robots mimics the teachers motion while recording data from its own sensors. In contrast to teleoperation shadowing requires an extra component enabling the robot to track and actively shadow.
+\subsection{Imitation} : Within this setting the approaches are further  divided   as follows : 1. Sensors on teacher and 2. External Observation .\\
+1. \textit{Sensors on Teacher} : Technique in which sensors located on the teachers body are used to record the teacher execution,  i.e. the records mappings are direct $g_R(z, a) = I(z,a)$.\\
+2. \textit{External Observation} : LfD  implementation which acquire the teacher states indirectly,  like in the sense of using visual cameras  to record the teacher demonstration, one e.g. is first extract the teachers state/actions from demonstration,  and then extract the learner state/actions from the record data.
+
+\section{Deriving the Policy}
+As described above there are 3 approaches to policy learning and  we want to adopt the  the one which involves minimal parameter tuning and fast learning times. 
+\subsection{Mapping Approach}
+Mapping approaches correspond  to the supervised learning setting where given   a state  we need to learn the corresponding action that need to be taken in a state, this  can be generalized to some extent with the use of function approximator, where similar states can be mapped to having similar actions. The type of model depends on the type of state and action space i.e. continuous action space $\rightarrow$ regression models and discrete action space $classification$.
+\subsection{System Models}
+This approach uses a state transition model $T(s'|s,a)$ and from that derives a policy  $\pi : Z \rightarrow A$. Reinforcement Learning is often used to solve and derive policies in this setting. There are 2  classes of approaches under this, 1. Hand Engineering Reward Function 2. Learned Reward Function.\\
+Hand Engineering Reward : In this settings reward functions (often sparse) are provided by the user.\\
+Learned Reward Function : This class of methods tries to extract the reward function from  the  demonstration data itself and is often called as Inverse Reinforcement Learning. \\
+
+\subsection{Planning}  In this approach we represent policy as a sequence of actions that lead from the initial state to the final goal state. These techniques not only rely on state action , but also require  extra information like annotation and intentions from the  teacher. 
+
+
+\section{Limitation on Demonstration Dataset}
+The paper  identifies  2  distinct causes for poor learner performance within LfD. 1. Dataset Sparsity  and 2. Poor Quality dataset  examples because of teachers inability to perform task optimally.
+ \subsection{Undemonstrated States}
+ This can  be solved with 2 approaches\\
+  1. Generalizing using existing demonstrations : which  is often done with the generalization capacity of function approximators like kNN etc. \\
+  2. Acquisition of new demonstrations: Another approach is to arrange the teacher to again provide demonstrations for unvisited  states. 
+  \subsection{Poor Quality Data}
+Again this can be broken into  two sub-problems  as listed below.\\
+1. Suboptimal  and Ambiguous Demonstrations : Removing the suboptimal actions or actions that do not contribute to the optimal behaviour of the agent in the task is one way but may  require domain knowledge to do the same. \\
+2. Learning from experience : Something similar to  the RL framework where executing of a task or policy is  given a feedback by someone which guides the  agent towards optimal behaviour. 
+
+\section{Future Directions}
+\begin{itemize}
+\item Learned state  features/  representations 
+\item Temporal Data 
+\item Execution Failures 
+\item New techniques for learning from experience
+\item Multi Robot Demonstration Learning 
+\item Evaluation Metrics
+
+\end{itemize}
+
+ 
+
+\bibliographystyle{plain}
+
+
+\bibliography{reference}
+
+\end{document}

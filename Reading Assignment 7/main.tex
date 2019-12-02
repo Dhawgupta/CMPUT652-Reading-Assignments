@@ -100,7 +100,7 @@ factor=1000]    % may be less that 1000
 
 
 % 
-\title{SenseAct \& Survey }
+\title{Learning from Demonstration }
 \author{Dhawal Gupta}
 \date{\today}
 
@@ -138,7 +138,7 @@ Taxonomy of reproducible research
 \begin{itemize}
 \item \textbf{Repeatability } : same team, running the same experimental setup.  Needed for reporting statistically sound results. 
 \item \textbf{Reproducibility} : Different team , same setup , achieving results within marginals of  experimental error. 
-\item \textbf{Replicability} : differente  team, different experimental  setup. Trying to replicate the results  , without access to the code, data and  environment.
+\item \textbf{Replicability} : different  team, different experimental  setup. Trying to replicate the results  , without access to the code, data and  environment.
 
 \end{itemize}
 \subsection{Methods}
@@ -148,21 +148,21 @@ The paper  proposes to uniformly configure the RL  experiments by collecting  al
 The task that  they have used is the  UR Reacher 2D. They have reused the OpenAI baselines, and used PPO and TRPO for their evaluations. 
 They task is used partly to investigate  their proposed methodology and to  also check reproducibility. 
 The paper approaches by performing ten runs for each  hyperparameter ,  to determine the statistical significance. Then it approximates the Empirical  distribution function,  using boostrapping on the collected data. 
-Bootstrapping is performed on 10k resamples on the ten average  returns  values to find the  EDF. 
+Bootstrapping is performed on 10k re samples on the ten average  returns  values to find the  EDF. 
 
 \subsection{Results}
 The paper reports  the repeatability of the code base  to hold alongside the issues that are there  with the  physical hardware. 
 
 The report that they are able to replicate the results that were proposed by  the former paper.
 \subsection{Recommendations}
-\textbf{Reproducing RL results of a reral world robot} is \textbf{DIFFICULT}.\\
-\textbf{Managing Software dependicies} should be reduced to \textbf{minimum} possible. \\
+\textbf{Reproducing RL results on real world robot} is \textbf{DIFFICULT}.\\
+\textbf{Managing Software dependencies} should be reduced to \textbf{minimum} possible. \\
 \textbf{Presetting and reporting random seeds}  is \textbf{essential}\\
-\textbf{Distinguishing btw experimental and library code}\\
+\textbf{Distinguishing between experimental and library code}\\
 \textbf{Logging of return values}
 \textbf{Reporting Hyper Parameters} is \textbf{Essential}.\\
 \textbf{Extensive  Documentation}\\
-\textbf{Open Source }  you research  
+\textbf{Open Source }  your research  
 \bibliographystyle{plain}
 
 
